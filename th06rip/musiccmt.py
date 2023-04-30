@@ -3,15 +3,17 @@ import enum
 import collections
 import os
 
-MusicCmtInfo = collections.namedtuple("MusicCmtInfo", ["music_id", "title", "comment"])
+class MusicCmtInfo(typing.NamedTuple):
+    title: str
+    comment: str
 
 class MusicCmtParserStatus(enum.Enum):
     FINDING_BLOCK = 0
     IN_TITLE = 1
     IN_BODY = 2
 
-def parse(f: typing.TextIO):
-    res = []
+def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
+    res = collections.OrderedDict()
 
     status = MusicCmtParserStatus.FINDING_BLOCK
     cur_mus_id = None
@@ -26,7 +28,7 @@ def parse(f: typing.TextIO):
 
         res_comment = "\n".join(cur_comment)
         res_comment = res_comment.rstrip()
-        res.append(MusicCmtInfo(cur_mus_id, cur_title, res_comment))
+        res[cur_mus_id] = MusicCmtInfo(cur_title, res_comment)
 
         status = MusicCmtParserStatus.FINDING_BLOCK
         cur_mus_id = None
