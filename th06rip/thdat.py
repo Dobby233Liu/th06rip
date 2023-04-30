@@ -13,6 +13,10 @@ Janky way to work with the janky thdat CLI tool instead of the thtk library
 THDAT_TOOL = "thdat"
 TOOL_TIMEOUT = 5  # s
 
+REGEX_DETECTED_VERSION = re.compile(r"^Detected version ([0-9]+)$")
+REGEX_FILELIST_HEADER = re.compile(r"^Name(?:\s*)Size(?:\s*)Stored$")
+REGEX_FILELIST_ITEMS = re.compile(r"^([A-Za-z0-9_\-.]+)(?:\s*)([0-9]+)(?:\s*)([0-9]+)$")
+
 
 def check_avaliablity() -> None:
     try:
@@ -77,7 +81,7 @@ class ThDatfile(object):
             stderr=subprocess.DEVNULL,
         )
         for line in out.splitlines():
-            rmatch = re.fullmatch(r"^Detected version ([0-9]+)$", line)
+            rmatch = re.fullmatch(REGEX_DETECTED_VERSION, line)
             if rmatch:
                 return int(rmatch[1])
         raise Exception(
@@ -96,13 +100,11 @@ class ThDatfile(object):
         raw_file_list = []
         for line in out.splitlines():
             if not filelist_found:
-                if re.fullmatch(r"^Name(?:\s*)Size(?:\s*)Stored$", line):
+                if re.fullmatch(REGEX_FILELIST_HEADER, line):
                     filelist_found = True
                 continue
 
-            rmatch = re.fullmatch(
-                r"^([A-Za-z0-9_\-.]+)(?:\s*)([0-9]+)(?:\s*)([0-9]+)$", line
-            )
+            rmatch = re.fullmatch(REGEX_FILELIST_ITEMS, line)
             if rmatch:
                 raw_file_list.append(rmatch.group(1, 2, 3))
             else:
