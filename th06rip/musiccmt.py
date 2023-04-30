@@ -13,6 +13,21 @@ class MusicCmtParserStatus(enum.Enum):
     IN_BODY = 2
 
 def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
+    """
+    Parses a musiccmt.txt file - what the engine reads to populate the
+    content of the Music Room
+
+    It's something like this
+
+    # comment
+    @file1
+    item name
+    comment
+    @file2
+    item name
+    comment
+    """
+
     res: collections.OrderedDict[str, MusicCmtInfo] = collections.OrderedDict()
 
     status = MusicCmtParserStatus.FINDING_BLOCK

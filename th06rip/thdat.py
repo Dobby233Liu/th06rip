@@ -6,6 +6,10 @@ import typing
 import re
 import shutil
 
+"""
+Janky way to work with the janky thdat CLI tool instead of the thtk library
+"""
+
 THDAT_TOOL = "thdat"
 TOOL_TIMEOUT = 5#s
 
@@ -89,6 +93,9 @@ class ThDatfile(object):
             return ThDatfileFile(path=x[0], size=int(x[1]), stored_size=int(x[2]), datfile=self)
         self.files = list(map(rawinfo_to_objects, raw_file_list))
 
+    def file_exists(self, path: str) -> bool:
+        return any(x.path == path for x in self.files)
+
     def _extract_by_path(self, path: str, dest: pathlib.Path):
         with tempfile.TemporaryDirectory() as tmpdir:
             subprocess.run([
@@ -100,6 +107,12 @@ class ThDatfile(object):
             timeout=TOOL_TIMEOUT, check=True,
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             shutil.move(os.path.join(tmpdir, path), dest)
+
+    def _extract_by_path_batch(self, paths: list[str], dest: pathlib.Path):
+        if not dest.is_dir():
+            raise NotADirectoryError
+        for path in paths:
+            self._extract_by_path(path, dest)
 
     def __repr__(self) -> str:
         return f"<th06rip.thdat.ThDatfile for {self.path} (v{self.version}) at {id(self)}>"
