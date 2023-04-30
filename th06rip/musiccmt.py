@@ -11,45 +11,45 @@ class MusicCmtParserStatus(enum.Enum):
     IN_BODY = 2
 
 def parse(f: typing.TextIO):
+    res = []
+
     status = MusicCmtParserStatus.FINDING_BLOCK
     cur_mus_id = None
     cur_title = None
     cur_comment = None
-    res = []
 
     def commit():
         nonlocal cur_mus_id, cur_title, cur_comment, status
 
-        if cur_mus_id is None:
+        if cur_mus_id is None: # do we have nothing loaded?
             return
 
         res_comment = "\n".join(cur_comment)
         res_comment = res_comment.rstrip()
-
         res.append(MusicCmtInfo(cur_mus_id, cur_title, res_comment))
+
+        status = MusicCmtParserStatus.FINDING_BLOCK
         cur_mus_id = None
         cur_title = None
         cur_comment = None
-        status = MusicCmtParserStatus.FINDING_BLOCK
 
-    while True:
-        line = f.readline()
-        if line == "":
-            break
-
+    for line in f:
         if line.startswith("#"):
             continue
-        elif line.startswith("@"):
+
+        linest = line[:-1]
+        if line.startswith("@"):
             commit()
-            cur_mus_id = os.path.splitext(os.path.basename(line[1:-1]))[0]
+
             status = MusicCmtParserStatus.IN_TITLE
+            cur_mus_id = os.path.splitext(os.path.basename(linest[1:]))[0]
         elif status == MusicCmtParserStatus.IN_TITLE:
-            cur_title = line[:-1]
+            cur_title = linest
+
             status = MusicCmtParserStatus.IN_BODY
             cur_comment = []
         elif status == MusicCmtParserStatus.IN_BODY:
-            cur_comment.append(line[:-1])
-
+            cur_comment.append(linest)
     commit()
 
     return res
