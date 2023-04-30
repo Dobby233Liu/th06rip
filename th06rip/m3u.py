@@ -5,7 +5,7 @@ Code for generating !tags.m3u
 """
 
 
-class M3UPart(object):
+class M3UPart:
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         raise NotImplementedError
 
@@ -148,9 +148,17 @@ class M3UVgmstreamFile(M3UMediaFile):
 ##########
 
 
-class M3UFile(object):
-    parts: list[M3UPart] = []
-    tag_name_width: int = -1
+class M3UFile:
+    name: str = ""
+    parts: list[M3UPart]
+    tag_name_width: int
+
+    def __init__(self) -> None:
+        self.parts = []
+        self.tag_name_width = -1
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.parts))
 
     def push(self, *new_parts: M3UPart) -> None:
         self.parts.extend(new_parts)

@@ -1,3 +1,4 @@
+import collections
 import os
 import pathlib
 import subprocess
@@ -34,7 +35,7 @@ def check_avaliablity() -> None:
         ) from e
 
 
-class ThDatfileFile(object):
+class ThDatfileFile:
     path: str
     size: int
     stored_size: int
@@ -55,10 +56,10 @@ class ThDatfileFile(object):
         return f"<th06rip.thdat.ThDatfilefile {self.path} in {self.datfile.path} at {id(self)}>"
 
 
-class ThDatfile(object):
+class ThDatfile:
     path: pathlib.Path
     version: int
-    files: list[ThDatfileFile]
+    files: collections.OrderedDict[str, ThDatfileFile]
 
     def __init__(
         self, path: pathlib.Path, version: typing.Optional[int] = None
@@ -68,6 +69,8 @@ class ThDatfile(object):
         check_avaliablity()
 
         self.path = path
+        if not self.path.exists():
+            raise FileNotFoundError(self.path)
         self.version = version if version else self.detect_version()
 
         self.load_file_list()
@@ -97,7 +100,7 @@ class ThDatfile(object):
         )
 
         filelist_found = False
-        raw_file_list = []
+        files = collections.OrderedDict()
         for line in out.splitlines():
             if not filelist_found:
                 if re.fullmatch(REGEX_FILELIST_HEADER, line):
@@ -106,22 +109,19 @@ class ThDatfile(object):
 
             rmatch = re.fullmatch(REGEX_FILELIST_ITEMS, line)
             if rmatch:
-                raw_file_list.append(rmatch.group(1, 2, 3))
+                x = rmatch.group(1, 2, 3)
+                files[x[0]] = ThDatfileFile(
+                    path=x[0], size=int(x[1]), stored_size=int(x[2]), datfile=self
+                )
             else:
                 break
 
         if not filelist_found:
             raise Exception("thdat did not return a file list")
-
-        def rawinfo_to_objects(x):
-            return ThDatfileFile(
-                path=x[0], size=int(x[1]), stored_size=int(x[2]), datfile=self
-            )
-
-        self.files = list(map(rawinfo_to_objects, raw_file_list))
+        self.files = files
 
     def file_exists(self, path: str) -> bool:
-        return any(x.path == path for x in self.files)
+        return path in self.files
 
     def _extract_by_path(self, path: str, dest: pathlib.Path):
         if not self.file_exists(path):
@@ -144,12 +144,36 @@ class ThDatfile(object):
             )
             shutil.move(os.path.join(tmpdir, path), dest)
 
-    def _extract_by_path_batch(self, paths: list[str], dest: pathlib.Path):
-        if not dest.is_dir():
-            raise NotADirectoryError(dest)
+    # def _extract_by_path_batch(self, paths: list[str], dest: pathlib.Path):
+    #     if not dest.is_dir():
+    #         raise NotADirectoryError(dest)
 
-        for path in paths:
-            self._extract_by_path(path, dest)
+    #     for path in paths:
+    #         if not self.file_exists(path):
+    #             raise FileNotFoundError(path)
+
+    #     with tempfile.TemporaryDirectory() as tmpdir:
+    #         subprocess.run(
+    #             [
+    #                 THDAT_TOOL,
+    #                 f"-x{self.version}",
+    #                 self.path.absolute(),
+    #                 "-C",
+    #                 tmpdir,
+    #                 *(path for path in paths),
+    #             ],
+    #             timeout=TOOL_TIMEOUT,
+    #             check=True,
+    #             stdout=subprocess.DEVNULL,
+    #             stderr=subprocess.DEVNULL,
+    #         )
+    #         for dir, _, files in os.walk(tmpdir):
+    #             dir_ours = os.path.join(dest, dir + "/")
+    #             os.makedirs(dir_ours, exist_ok=True)
+    #             for file in files:
+    #                 shutil.move(
+    #                     os.path.join(tmpdir, dir, file), os.path.join(dest, dir + "/")
+    #                 )
 
     def __repr__(self) -> str:
         return (

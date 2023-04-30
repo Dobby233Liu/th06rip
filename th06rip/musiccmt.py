@@ -22,11 +22,13 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
 
     It's something like this
 
+    ```text
     # comment
-    @file
+    @bgm/file
     item name
     comment
     [repeat]
+    ```
     """
 
     res: collections.OrderedDict[str, MusicCmtInfo] = collections.OrderedDict()
@@ -54,7 +56,7 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
             commit()
 
             status = MusicCmtParserStatus.IN_TITLE
-            cur_mus_id = os.path.splitext(os.path.basename(linest[1:]))[0]
+            cur_mus_id = os.path.splitext(os.path.relpath(linest[1:], "bgm/"))[0]
         elif status == MusicCmtParserStatus.IN_TITLE:
             cur_title = linest
 
