@@ -43,6 +43,7 @@ argparser.add_argument("destination", type=pathlib.Path)
 argparser.add_argument(
     "--game-version", type=int, required=False, help="game version (6, 7)"
 )
+argparser.add_argument("--game-name", type=str, required=True)
 argparser.add_argument(
     "--verbosity",
     type=MainVerbosity.from_argparse,
@@ -162,6 +163,7 @@ def main() -> None:
         m3u.M3UMediaFile(file) for file in unknown_audio_files
     ]
     tagsm3u.push(
+        m3u.M3UVgmstreamGlobalTag("ALBUM", args.game_name),
         *DEFAULT_GLOBAL_TAGS,
         m3u.M3UVgmstreamGlobalCommand("AUTOTRACK"),
     )
@@ -174,25 +176,30 @@ def main() -> None:
     with open(os.path.join(args.destination, "!tags.m3u"), "w", encoding="utf-8") as f:
         tagsm3u.write(f)
 
-    vprint2("Putting together !playlist_midi.m3u")
-    midiplaylistm3u = m3u.M3UFile()
+    has_midi_playlist = False
     unknown_midi_files = list(glob.iglob("*.mid", root_dir=args.destination))
-    for name, info in musiccmt_data.items():
-        this_mid = name + ".mid"
-        if this_mid in unknown_midi_files:
-            unknown_midi_files.remove(this_mid)
-        else:
-            raise FileNotFoundError(this_mid)
-        midiplaylistm3u.push(m3u.M3UMediaFile(this_mid))
     if len(unknown_midi_files) > 0:
-        midiplaylistm3u.push(
-            m3u.M3UBlankLine(), m3u.M3UComment("UNKNOWN FILES"), m3u.M3UBlankLine()
-        )
-        midiplaylistm3u.push(*(m3u.M3UMediaFile(file) for file in unknown_midi_files))
-    with open(
-        os.path.join(args.destination, "!playlist_midi.m3u"), "w", encoding="utf-8"
-    ) as f:
-        midiplaylistm3u.write(f)
+        has_midi_playlist = True
+        vprint2("Putting together !playlist_midi.m3u")
+        midiplaylistm3u = m3u.M3UFile()
+        for name, info in musiccmt_data.items():
+            this_mid = name + ".mid"
+            if this_mid in unknown_midi_files:
+                unknown_midi_files.remove(this_mid)
+            else:
+                raise FileNotFoundError(this_mid)
+            midiplaylistm3u.push(m3u.M3UMediaFile(this_mid))
+        if len(unknown_midi_files) > 0:
+            midiplaylistm3u.push(
+                m3u.M3UBlankLine(), m3u.M3UComment("UNKNOWN FILES"), m3u.M3UBlankLine()
+            )
+            midiplaylistm3u.push(
+                *(m3u.M3UMediaFile(file) for file in unknown_midi_files)
+            )
+        with open(
+            os.path.join(args.destination, "!playlist_midi.m3u"), "w", encoding="utf-8"
+        ) as f:
+            midiplaylistm3u.write(f)
 
     vprint2("Creating !extra.7z")
     extra_files = [*musiccmt_split_files]
@@ -212,6 +219,9 @@ def main() -> None:
         os.remove(file)
 
     vprint2("OK")
+    vprint2("Please write !notes.txt")
+    if has_midi_playlist:
+        vprint2("Please manually tag MIDI files with foo_external_tags")
 
 
 main()
