@@ -1,6 +1,7 @@
 import typing
 import enum
 import collections
+import os
 
 MusicCmtInfo = collections.namedtuple("MusicCmtInfo", ["music_id", "title", "comment"])
 
@@ -34,7 +35,7 @@ def parse(f: typing.TextIO):
 
         if line.startswith("@"):
             commit()
-            cur_mus_id = line[1:-1]
+            cur_mus_id = os.path.splitext(os.path.basename(line[1:-1]))[0]
             status = MusicCmtParserStatus.IN_TITLE
         elif status == MusicCmtParserStatus.IN_TITLE:
             cur_title = line[:-1]
