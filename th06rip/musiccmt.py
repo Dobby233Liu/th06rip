@@ -3,14 +3,17 @@ import enum
 import collections
 import os
 
+
 class MusicCmtInfo(typing.NamedTuple):
     title: str
     comment: str
+
 
 class MusicCmtParserStatus(enum.Enum):
     FINDING_BLOCK = 0
     IN_TITLE = 1
     IN_BODY = 2
+
 
 def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
     """
@@ -20,12 +23,10 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
     It's something like this
 
     # comment
-    @file1
+    @file
     item name
     comment
-    @file2
-    item name
-    comment
+    [repeat]
     """
 
     res: collections.OrderedDict[str, MusicCmtInfo] = collections.OrderedDict()
@@ -36,7 +37,7 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
     def commit():
         nonlocal cur_mus_id, cur_title, cur_comment, status
 
-        if cur_mus_id is None: # do we have nothing loaded?
+        if cur_mus_id is None:  # do we have nothing loaded?
             return
 
         res[cur_mus_id] = MusicCmtInfo(cur_title, "\n".join(cur_comment).rstrip())

@@ -4,11 +4,14 @@ import typing
 Code for generating !tags.m3u
 """
 
+
 class M3UPart(object):
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         raise NotImplementedError
 
+
 # Classic M3Us
+
 
 class M3UMediaFile(M3UPart):
     filename: str
@@ -17,11 +20,12 @@ class M3UMediaFile(M3UPart):
         super().__init__()
         self.filename = filename
 
-    def get_filename_to_be_written(self) -> str: # for M3UVgmstreamFile
+    def get_filename_to_be_written(self) -> str:  # for M3UVgmstreamFile
         return self.filename
 
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         print(self.get_filename_to_be_written(), file=f)
+
 
 class M3UComment(M3UPart):
     line: str
@@ -33,14 +37,18 @@ class M3UComment(M3UPart):
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         print(f"# {self.line}", file=f)
 
+
 class M3UBlankLine(M3UPart):
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         print("", file=f)
 
+
 # Extended M3Us
+
 
 class M3UExtendedPart(M3UPart):
     pass
+
 
 class M3UExtendedDirective(M3UExtendedPart):
     name: str
@@ -54,19 +62,23 @@ class M3UExtendedDirective(M3UExtendedPart):
         content = f":{self.content}" if self.content else ""
         print(f"#{self.name}{content}", file=f)
 
+
 # vgmstream !tags.m3u
+
 
 def tagsm3u_fixlate(tagname: str, char: str, /, allow_spaces: bool = True) -> str:
     res = char + tagname
     if " " in tagname:
         if not allow_spaces:
-            raise ValueError(f"tag name \"{tagname}\" should not contain spaces")
+            raise ValueError(f'tag name "{tagname}" should not contain spaces')
         res += char
     return res
+
 
 class M3UVgmstreamKeyValuePairComment(M3UPart):
     def get_name_to_be_written(self, width: typing.Optional[int] = None) -> str:
         raise NotImplementedError
+
 
 class M3UVgmstreamTag(M3UVgmstreamKeyValuePairComment):
     name: str
@@ -77,12 +89,16 @@ class M3UVgmstreamTag(M3UVgmstreamKeyValuePairComment):
     def __init__(self, name: str, content: str):
         super().__init__()
         if " " in name and not self.name_can_contain_spaces:
-            raise ValueError(f"tag name \"{name}\" should not contain spaces")
+            raise ValueError(f'tag name "{name}" should not contain spaces')
         self.name = name
         self.content = content
 
     def get_name_to_be_written(self, width: typing.Optional[int] = None) -> str:
-        res = tagsm3u_fixlate(self.name.upper(), self.psfix_char, allow_spaces=self.name_can_contain_spaces)
+        res = tagsm3u_fixlate(
+            self.name.upper(),
+            self.psfix_char,
+            allow_spaces=self.name_can_contain_spaces,
+        )
         if width:
             res = res.ljust(width)
         return res
@@ -91,9 +107,11 @@ class M3UVgmstreamTag(M3UVgmstreamKeyValuePairComment):
         line = f"# {self.get_name_to_be_written(m3u.tag_name_width)} {self.content}"
         print(line, file=f)
 
+
 class M3UVgmstreamGlobalTag(M3UVgmstreamTag):
     psfix_char = "@"
     name_can_contain_spaces = True
+
 
 class M3UVgmstreamGlobalCommand(M3UVgmstreamKeyValuePairComment):
     name: str
@@ -102,7 +120,7 @@ class M3UVgmstreamGlobalCommand(M3UVgmstreamKeyValuePairComment):
     def __init__(self, name: str):
         super().__init__()
         if " " in name:
-            raise ValueError(f"command name \"{name}\" should not contain spaces")
+            raise ValueError(f'command name "{name}" should not contain spaces')
         self.name = name
 
     def get_name_to_be_written(self, width: typing.Optional[int] = None) -> str:
@@ -115,6 +133,7 @@ class M3UVgmstreamGlobalCommand(M3UVgmstreamKeyValuePairComment):
         line = f"# {self.get_name_to_be_written(m3u.tag_name_width)}"
         print(line, file=f)
 
+
 class M3UVgmstreamFile(M3UMediaFile):
     mini_txtp_info: typing.Optional[str]
 
@@ -125,7 +144,9 @@ class M3UVgmstreamFile(M3UMediaFile):
     def get_filename_to_be_written(self) -> str:
         return self.filename + (self.mini_txtp_info if self.mini_txtp_info else "")
 
+
 ##########
+
 
 class M3UFile(object):
     parts: list[M3UPart] = []
