@@ -77,7 +77,7 @@ class M3UVgmstreamGlobalCommand(M3UVgmstreamCommentWithKey):
         line = f"# {self.get_name_to_be_written(m3u.tag_name_width)}"
         print(line, file=f)
 
-class M3UFile(M3UPart):
+class M3UMediaFile(M3UPart):
     filename: str
 
     def __init__(self, filename: str):
@@ -90,8 +90,8 @@ class M3UFile(M3UPart):
     def write(self, m3u: "M3UFile", f: typing.TextIO) -> None:
         print(self.get_filename_to_be_written(), file=f)
 
-class M3UVgmstreamFile(M3UFile):
-    mini_txtp_info: str
+class M3UVgmstreamFile(M3UMediaFile):
+    mini_txtp_info: typing.Optional[str]
 
     def __init__(self, filename: str, mini_txtp_info: typing.Optional[str] = None):
         super().__init__(filename)
@@ -116,8 +116,8 @@ class M3UExtendedDirectives(M3UExtendedPart):
         print("#{name}{content}", file=f)
 
 class M3UFile(object):
-    parts: list["M3UPart"] = []
-    tag_name_width: int = None
+    parts: list[M3UPart] = []
+    tag_name_width: int = -1
     is_extended: bool = False
 
     def __init__(self, extended: bool = False):
@@ -129,7 +129,7 @@ class M3UFile(object):
             if isinstance(part, M3UExtendedPart) and not self.is_extended:
                 raise ValueError("non-extended M3U file contains EXTM3U parts")
 
-    def push(self, *new_parts: tuple["M3UPart"]) -> None:
+    def push(self, *new_parts: M3UPart) -> None:
         self.parts.extend(new_parts)
         self.sanitize_parts()
 

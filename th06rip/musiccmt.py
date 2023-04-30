@@ -13,12 +13,10 @@ class MusicCmtParserStatus(enum.Enum):
     IN_BODY = 2
 
 def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
-    res = collections.OrderedDict()
+    res: collections.OrderedDict[str, MusicCmtInfo] = collections.OrderedDict()
 
     status = MusicCmtParserStatus.FINDING_BLOCK
-    cur_mus_id = None
-    cur_title = None
-    cur_comment = None
+    cur_mus_id, cur_title, cur_comment = (None, None, None)
 
     def commit():
         nonlocal cur_mus_id, cur_title, cur_comment, status
@@ -26,14 +24,10 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
         if cur_mus_id is None: # do we have nothing loaded?
             return
 
-        res_comment = "\n".join(cur_comment)
-        res_comment = res_comment.rstrip()
-        res[cur_mus_id] = MusicCmtInfo(cur_title, res_comment)
+        res[cur_mus_id] = MusicCmtInfo(cur_title, "\n".join(cur_comment).rstrip())
 
         status = MusicCmtParserStatus.FINDING_BLOCK
-        cur_mus_id = None
-        cur_title = None
-        cur_comment = None
+        cur_mus_id, cur_title, cur_comment = (None, None, None)
 
     for line in f:
         if line.startswith("#"):

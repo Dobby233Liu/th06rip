@@ -41,7 +41,7 @@ class ThDatfileFile(object):
 
 class ThDatfile(object):
     path: pathlib.Path
-    version: int = None
+    version: int
     files: list[ThDatfileFile]
 
     def __init__(self, path: pathlib.Path, version: typing.Optional[int] = None) -> None:
@@ -61,7 +61,7 @@ class ThDatfile(object):
         for line in out.splitlines():
             rmatch = re.fullmatch(r"^Detected version ([0-9]+)$", line)
             if rmatch:
-                return rmatch[1]
+                return int(rmatch[1])
         raise Exception(f"could not detect version of datfile {self.path.relative_to(os.getcwd())}")
 
     def load_file_list(self) -> None:
