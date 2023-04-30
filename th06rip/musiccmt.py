@@ -17,7 +17,7 @@ def parse(f: typing.TextIO):
     res = []
 
     def commit():
-        nonlocal cur_mus_id, cur_title, cur_comment
+        nonlocal cur_mus_id, cur_title, cur_comment, status
 
         if cur_mus_id is None:
             return
@@ -25,7 +25,7 @@ def parse(f: typing.TextIO):
         cur_mus_id = None
         cur_title = None
         cur_comment = None
-        mode = MusicCmtParserStatus.FINDING_BLOCK
+        status = MusicCmtParserStatus.FINDING_BLOCK
 
     while True:
         line = f.readline()
