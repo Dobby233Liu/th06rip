@@ -22,7 +22,7 @@ def parse(f: typing.TextIO):
 
         if cur_mus_id is None:
             return
-        res.append(MusicCmtInfo(cur_mus_id, cur_title, cur_comment))
+        res.append(MusicCmtInfo(cur_mus_id, cur_title, "\n".join(cur_comment)))
         cur_mus_id = None
         cur_title = None
         cur_comment = None
@@ -33,19 +33,21 @@ def parse(f: typing.TextIO):
         if line == "":
             break
 
-        if line.startswith("@"):
+        if line.startswith("#"):
+            continue
+        elif line.startswith("@"):
             commit()
             cur_mus_id = os.path.splitext(os.path.basename(line[1:-1]))[0]
             status = MusicCmtParserStatus.IN_TITLE
         elif status == MusicCmtParserStatus.IN_TITLE:
             cur_title = line[:-1]
             status = MusicCmtParserStatus.IN_BODY
-            cur_comment = ""
+            cur_comment = []
         elif status == MusicCmtParserStatus.IN_BODY:
-            if line == "\n":
-                commit()
+            linest = line.strip()
+            if linest == "":
                 continue
-            cur_comment += line
+            cur_comment.append(linest)
 
     commit()
 
