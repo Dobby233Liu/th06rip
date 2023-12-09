@@ -142,7 +142,7 @@ class M3UVgmstreamFile(M3UMediaFile):
         self.mini_txtp_info = mini_txtp_info
 
     def get_filename_to_be_written(self) -> str:
-        return self.filename + (self.mini_txtp_info if self.mini_txtp_info else "")
+        return self.filename + (((" " + self.mini_txtp_info + ".txtp") if self.mini_txtp_info else "")
 
 
 ##########
