@@ -135,14 +135,14 @@ class M3UVgmstreamGlobalCommand(M3UVgmstreamKeyValuePairComment):
 
 
 class M3UVgmstreamFile(M3UMediaFile):
-    mini_txtp_info: typing.Optional[str]
+    mini_txtp_commands: typing.Optional[str]
 
-    def __init__(self, filename: str, mini_txtp_info: typing.Optional[str] = None):
+    def __init__(self, filename: str, mini_txtp_commands: typing.Optional[str] = None):
         super().__init__(filename)
-        self.mini_txtp_info = mini_txtp_info
+        self.mini_txtp_commands = mini_txtp_commands
 
     def get_filename_to_be_written(self) -> str:
-        return self.filename + (((" " + self.mini_txtp_info + ".txtp") if self.mini_txtp_info else "")
+        return self.filename + ((" " + self.mini_txtp_commands + ".txtp") if self.mini_txtp_commands else "")
 
 
 ##########
