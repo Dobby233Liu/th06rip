@@ -1,0 +1,26 @@
+[project]
+name = "th06rip"
+version = "0.0.0"
+authors = [
+  { name="Liu Wenyuan", email="15816141883@163.com" },
+]
+description = "Make a joshw.info set from BGM files of EoSD/PCB (trial)"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "py7zr"
+]
+
+[project.urls]
+Homepage = "https://github.com/Dobby233Liu/th06rip"
+Issues = "https://github.com/Dobby233Liu/th06rip/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
