@@ -163,6 +163,9 @@ class M3UFile:
     def push(self, *new_parts: M3UPart) -> None:
         self.parts.extend(new_parts)
 
+    def __add__(self, other: M3UPart) -> None:
+        self.push(other)
+
     def pop(self) -> M3UPart:
         return self.parts.pop()
 
