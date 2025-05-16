@@ -29,6 +29,8 @@ def parse(f: typing.TextIO) -> collections.OrderedDict[str, MusicCmtInfo]:
     comment
     [repeat]
     ```
+
+    TODO: comply to https://blog.strmnl.top/p/20230701001/
     """
 
     res: collections.OrderedDict[str, MusicCmtInfo] = collections.OrderedDict()
