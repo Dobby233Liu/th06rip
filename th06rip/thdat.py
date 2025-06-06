@@ -144,36 +144,36 @@ class ThDatfile:
             )
             shutil.move(os.path.join(tmpdir, path), dest)
 
-    # def _extract_by_path_batch(self, paths: list[str], dest: pathlib.Path):
-    #     if not dest.is_dir():
-    #         raise NotADirectoryError(dest)
+    def _extract_by_path_batch(self, paths: list[str], dest: pathlib.Path):
+        if not dest.is_dir():
+            raise NotADirectoryError(dest)
 
-    #     for path in paths:
-    #         if not self.file_exists(path):
-    #             raise FileNotFoundError(path)
+        for path in paths:
+            if not self.file_exists(path):
+                raise FileNotFoundError(path)
 
-    #     with tempfile.TemporaryDirectory() as tmpdir:
-    #         subprocess.run(
-    #             [
-    #                 THDAT_TOOL,
-    #                 f"-x{self.version}",
-    #                 self.path.absolute(),
-    #                 "-C",
-    #                 tmpdir,
-    #                 *(path for path in paths),
-    #             ],
-    #             timeout=TOOL_TIMEOUT,
-    #             check=True,
-    #             stdout=subprocess.DEVNULL,
-    #             stderr=subprocess.DEVNULL,
-    #         )
-    #         for dir, _, files in os.walk(tmpdir):
-    #             dir_ours = os.path.join(dest, dir + "/")
-    #             os.makedirs(dir_ours, exist_ok=True)
-    #             for file in files:
-    #                 shutil.move(
-    #                     os.path.join(tmpdir, dir, file), os.path.join(dest, dir + "/")
-    #                 )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run(
+                [
+                    THDAT_TOOL,
+                    f"-x{self.version}",
+                    self.path.absolute(),
+                    "-C",
+                    tmpdir,
+                    *(path for path in paths),
+                ],
+                timeout=TOOL_TIMEOUT,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            for dir, _, files in os.walk(tmpdir):
+                dir_ours = os.path.join(dest, dir + "/")
+                os.makedirs(dir_ours, exist_ok=True)
+                for file in files:
+                    shutil.move(
+                        os.path.join(tmpdir, dir, file), os.path.join(dest, dir + "/")
+                    )
 
     def __repr__(self) -> str:
         return (
